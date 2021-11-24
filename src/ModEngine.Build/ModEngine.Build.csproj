@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="BuildEngine" Version="0.0.0-preview.0.11" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ModEngine.Core\ModEngine.Core.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <PackageId>ModEngine.Build</PackageId>
+        <Description>A companion library for ModEngine using BuildEngine to create repeatable mod builds, designed for any kind of mods.</Description>
+        <Authors>agc93</Authors>
+        <Copyright>© Alistair Chapman 2021</Copyright>
+        <PackageTags>modding;</PackageTags>
+        <RepositoryUrl>https://github.com/agc93/ModEngine</RepositoryUrl>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/agc93/ModEngine</PackageProjectUrl>
+    </PropertyGroup>
+
+</Project>

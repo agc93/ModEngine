@@ -1,0 +1,1 @@
+﻿Note that _both_ `ModEngine.Console` and `ModEngine.HexPatch` are effectively only for testing, and should not be considered part of the project.
