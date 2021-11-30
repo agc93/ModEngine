@@ -85,11 +85,20 @@ namespace ModEngine.Build
                     var modifiedFiles = new List<FileInfo>();
                     Logger?.LogInformation($"Running patches for {mod.GetLabel()}");
                     var patches = patchEngine.PatchSelector(mod);
-                    foreach (var (targetFile, patchSets) in patches)
-                    {
+                    foreach (var (targetFile, patchSets) in patches) {
+                        var srcFile = new SourceFile(targetFile);
+                        try {
+                            var realFile = BuildContext.GetFile(targetFile);
+                            if (realFile != null) {
+                                srcFile.File = realFile;
+                            }
+                        }
+                        catch {
+                            // ignored
+                        }
                         var patchSetList = patchSets.ToList();
                         Logger?.LogDebug($"Patching {Path.GetFileName(targetFile)}...");
-                        var fi = await patchEngine.Engine.RunPatch(targetFile, patchSetList);
+                        var fi = await patchEngine.Engine.RunPatch(srcFile, patchSetList);
                         modifiedFiles.AddRange(fi);
                         _modifiedFiles.AddRange(modifiedFiles);
                     }
