@@ -17,9 +17,13 @@ namespace ModEngine.Core
         public IEnumerable<Func<string, IEnumerable<string>>>? SourceFileSelectors => null;
     }
 
-    public record SourceFile(string Key)
+    public record SourceFile
     {
+        public SourceFile(string key) {
+            Key = key;
+        }
         public FileInfo? File { get; set; }
         public string? Target { get; set; }
+        public string Key { get; set; }
     }
 }
