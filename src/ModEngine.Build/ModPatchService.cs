@@ -27,14 +27,10 @@ namespace ModEngine.Build
         /// Represents a given patch engine and what patches it uses.
         /// </summary>
         /// <typeparam name="TPatch">The patch type this engine uses.</typeparam>
-        public record PatchEngineDefinition<TPatch> where TPatch : Patch
+        public record PatchEngineDefinition<TPatch>(IPatchEngine<TPatch> Engine, Func<TMod, Dictionary<string, IEnumerable<PatchSet<TPatch>>>> PatchSelector) where TPatch : Patch
         {
-            public PatchEngineDefinition(IPatchEngine<TPatch> engine, Func<TMod, Dictionary<string, IEnumerable<PatchSet<Patch>>>> patchSelector) {
-                Engine = engine;
-                PatchSelector = patchSelector;
-            }
-            public IPatchEngine<TPatch> Engine { get; set; }
-            public Func<TMod, Dictionary<string, IEnumerable<PatchSet<Patch>>>> PatchSelector { get; set; }
+            public IPatchEngine<TPatch> Engine { get; set; } = Engine;
+            public Func<TMod, Dictionary<string, IEnumerable<PatchSet<TPatch>>>> PatchSelector { get; set; } = PatchSelector;
             public int Priority { get; set; }
         }
         private readonly List<PatchEngineDefinition<Patch>> _patchEngines = new();

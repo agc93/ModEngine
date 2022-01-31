@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ModEngine.Core
@@ -20,7 +21,14 @@ namespace ModEngine.Core
     public record SourceFile
     {
         public SourceFile(string key) {
-            Key = key;
+            if (key.Contains('>')) {
+                var assetSplit = key.Split('>');
+                Key = assetSplit.First();
+                Target = assetSplit.Last();
+            }
+            else {
+                Key = key;
+            }
         }
         public FileInfo? File { get; set; }
         public string? Target { get; set; }
