@@ -34,11 +34,10 @@ namespace ModEngine.Build
             public int Priority { get; set; }
         }
         private readonly List<PatchEngineDefinition<Patch>> _patchEngines = new();
-        private IEnumerable<PatchEngineDefinition<Patch>> PatchEngines => _patchEngines.OrderBy(p => p.Priority);
+        protected IEnumerable<PatchEngineDefinition<Patch>> PatchEngines => _patchEngines.OrderBy(p => p.Priority);
         protected readonly ISourceFileService FileService;
         protected readonly ILogger<ModPatchService<TMod, TContext>>? Logger;
-        private readonly IModBuilder? _modBuilder;
-        private List<FileInfo> _modifiedFiles = new();
+        protected readonly IModBuilder? _modBuilder;
         public List<TMod> Mods { get; }
         
         public Func<TContext, FileInfo>? PreBuildAction { get; set; }
@@ -70,13 +69,21 @@ namespace ModEngine.Build
         public ModPatchService(TContext context, ISourceFileService fileService, IModBuilder? modBuilder, IEnumerable<PatchEngineDefinition<Patch>> patchEngineDefinitions, ILogger<ModPatchService<TMod, TContext>>? logger) : this(new List<TMod>(), context, fileService, modBuilder, patchEngineDefinitions, logger) {
         }
 
-        public virtual void AddEngine(IPatchEngine<Patch> patchEngine,
+        public virtual ModPatchService<TMod, TContext> AddEngine(IPatchEngine<Patch> patchEngine,
             Func<TMod, Dictionary<string, IEnumerable<PatchSet<Patch>>>> patchSelector, int? priority = 10) {
             _patchEngines.Add(new PatchEngineDefinition<Patch>(patchEngine, patchSelector) {Priority = priority ?? 10});
+            return this;
+        }
+
+        public virtual ModPatchService<TMod, TContext> AddEngines(params PatchEngineDefinition<Patch>[] patchEngineDefinitions) {
+            foreach (var definition in patchEngineDefinitions) {
+                _patchEngines.Add(definition);
+            }
+            return this;
         }
 
         public virtual async Task<ModPatchService<TMod, TContext>> RunPatches() {
-            foreach (var patchEngine in PatchEngines) {
+            foreach (var patchEngine in _patchEngines) {
                 foreach (var mod in Mods) {
                     var modifiedFiles = new List<FileInfo>();
                     Logger?.LogInformation($"Running patches for {mod.GetLabel()}");
@@ -96,7 +103,6 @@ namespace ModEngine.Build
                         Logger?.LogDebug($"Patching {Path.GetFileName(targetFile)}...");
                         var fi = await patchEngine.Engine.RunPatch(srcFile, patchSetList);
                         modifiedFiles.AddRange(fi);
-                        _modifiedFiles.AddRange(modifiedFiles);
                     }
                     Logger?.LogDebug($"Modified {modifiedFiles.Count} files: {string.Join(", ", modifiedFiles.Select(f => f.Name))}");
                 }
@@ -120,9 +126,17 @@ namespace ModEngine.Build
         }
 
         public virtual async Task<ModPatchService<TMod, TContext>> LoadFiles(Func<string, IEnumerable<string>?>? extraFileSelector = null) {
-            foreach (var patchEngine in PatchEngines) {
-                var patches = this.Mods.SelectMany(m => patchEngine.PatchSelector(m))
-                    .ToDictionary(fp => fp.Key, fp => fp.Value);
+            foreach (var patchEngine in _patchEngines) {
+                var allPatches = this.Mods.SelectMany(m => patchEngine.PatchSelector(m)).ToList();
+                var patches = new Dictionary<string, IEnumerable<PatchSet<Patch>>>();
+                foreach (var requestSet in allPatches) {
+                    if (patches.ContainsKey(requestSet.Key)) {
+                        patches[requestSet.Key] = patches[requestSet.Key].Concat(requestSet.Value);
+                    }
+                    else {
+                        patches.Add(requestSet.Key, requestSet.Value);
+                    }
+                }
                 var files = await patchEngine.Engine.LoadFiles(patches, extraFileSelector);
                 files ??= patches
                     .GroupBy(fp => fp.Key)
