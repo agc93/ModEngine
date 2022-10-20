@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Fluid.Core" Version="2.0.13" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ModEngine.Core\ModEngine.Core.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <PackageId>ModEngine.Templating</PackageId>
+        <Description>A companion library for ModEngine (and ModEngine.Build) with helpers to support templating mods and patches more easily.</Description>
+        <Authors>agc93</Authors>
+        <Copyright>© Alistair Chapman 2022</Copyright>
+        <PackageTags>modding;</PackageTags>
+        <RepositoryUrl>https://github.com/agc93/ModEngine</RepositoryUrl>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/agc93/ModEngine</PackageProjectUrl>
+    </PropertyGroup>
+
+</Project>
