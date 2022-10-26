@@ -1,0 +1,16 @@
+﻿<Project>
+    <PropertyGroup>
+        <DebugType>Embedded</DebugType>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <PropertyGroup>
+        <Authors>agc93</Authors>
+        <Copyright>© Alistair Chapman 2021</Copyright>
+        <PackageTags>modding;</PackageTags>
+        <RepositoryUrl>https://github.com/agc93/ModEngine</RepositoryUrl>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/agc93/ModEngine</PackageProjectUrl>
+    </PropertyGroup>
+</Project>
