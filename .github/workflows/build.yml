@@ -24,9 +24,8 @@ jobs:
         uses: cake-build/cake-action@v1
         with:
           target: Default
-          cake-bootstrap: true
           verbosity: Verbose
-          cake-version: 1.1.0
+          cake-version: tool-manifest
         env:
           NUGET_TOKEN: ${{secrets.NUGET_TOKEN}}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

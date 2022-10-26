@@ -390,3 +390,4 @@ FodyWeavers.xsd
 **/*.dtm
 
 tools/**
+dist/**
