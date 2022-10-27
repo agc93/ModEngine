@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using ModEngine.Core;
 
@@ -14,7 +10,7 @@ namespace ModEngine.Build
     /// <typeparam name="TMod">The mod type to deserialize from the files.</typeparam>
     public class ModFileLoader<TMod> : IModLoader<TMod> where TMod : Mod
     {
-        private protected ILogger<ModFileLoader<TMod>> _logger;
+        private readonly ILogger<ModFileLoader<TMod>>? _logger;
 
         public ModFileLoader()
         {
@@ -28,7 +24,7 @@ namespace ModEngine.Build
         public Dictionary<string, TMod> LoadFromFiles(IEnumerable<string> filePaths, List<Func<TMod, bool>>? loadRequirements = null)
         {
             var fileMods = new Dictionary<string, TMod>();
-            foreach (var file in filePaths.Where(f => f.Length > 0 && File.ReadAllText(f).Any()))
+            foreach (var file in filePaths.Where(f => f.Length > 0 && File.Exists(f) && File.ReadAllText(f).Any()))
             {
                 try
                 {
@@ -51,7 +47,7 @@ namespace ModEngine.Build
                         }
                     }
                 }
-                catch (System.Exception)
+                catch (Exception)
                 {
                     _logger?.LogWarning($"Failed to load mod data from {file}!");
                 }

@@ -22,22 +22,11 @@ namespace ModEngine.Build
     /// <typeparam name="TContext">The build context type.</typeparam>
     public class ModPatchService<TMod, TContext> : BuildService<TContext>, IDisposable where TContext : IBuildContext where TMod : Mod
     {
-        /// <summary>
-        /// Used to register patch engines with a given <see cref="ModPatchService{TMod,TContext}"/>. 
-        /// Represents a given patch engine and what patches it uses.
-        /// </summary>
-        /// <typeparam name="TPatch">The patch type this engine uses.</typeparam>
-        public record PatchEngineDefinition<TPatch>(IPatchEngine<TPatch> Engine, Func<TMod, Dictionary<string, IEnumerable<PatchSet<TPatch>>>> PatchSelector) where TPatch : Patch
-        {
-            public IPatchEngine<TPatch> Engine { get; set; } = Engine;
-            public Func<TMod, Dictionary<string, IEnumerable<PatchSet<TPatch>>>> PatchSelector { get; set; } = PatchSelector;
-            public int Priority { get; set; }
-        }
-        private readonly List<PatchEngineDefinition<Patch>> _patchEngines = new();
-        protected IEnumerable<PatchEngineDefinition<Patch>> PatchEngines => _patchEngines.OrderBy(p => p.Priority);
+        private readonly List<PatchEngineDefinition<TMod, Patch>> _patchEngines = new();
+        protected IEnumerable<PatchEngineDefinition<TMod, Patch>> PatchEngines => _patchEngines.OrderBy(p => p.Priority);
         protected readonly ISourceFileService FileService;
         protected readonly ILogger<ModPatchService<TMod, TContext>>? Logger;
-        protected readonly IModBuilder? _modBuilder;
+        protected readonly IModBuilder? ModBuilder;
         public List<TMod> Mods { get; }
         
         public Func<TContext, FileInfo>? PreBuildAction { get; set; }
@@ -56,26 +45,26 @@ namespace ModEngine.Build
             FileService = fileService;
             Logger = logger;
             Mods = mods;
-            _modBuilder = modBuilder;
+            ModBuilder = modBuilder;
         }
         
         public ModPatchService(TContext context, ISourceFileService fileService, IModBuilder? modBuilder, ILogger<ModPatchService<TMod, TContext>>? logger) : this(new List<TMod>(), context, fileService, modBuilder, logger) {
         }
 
-        public ModPatchService(List<TMod> mods, TContext context, ISourceFileService fileService, IModBuilder? modBuilder, IEnumerable<PatchEngineDefinition<Patch>> patchEngineDefinitions, ILogger<ModPatchService<TMod, TContext>>? logger) : this(mods, context, fileService, modBuilder, logger) {
+        public ModPatchService(List<TMod> mods, TContext context, ISourceFileService fileService, IModBuilder? modBuilder, IEnumerable<PatchEngineDefinition<TMod, Patch>> patchEngineDefinitions, ILogger<ModPatchService<TMod, TContext>>? logger) : this(mods, context, fileService, modBuilder, logger) {
             _patchEngines.AddRange(patchEngineDefinitions);
         }
         
-        public ModPatchService(TContext context, ISourceFileService fileService, IModBuilder? modBuilder, IEnumerable<PatchEngineDefinition<Patch>> patchEngineDefinitions, ILogger<ModPatchService<TMod, TContext>>? logger) : this(new List<TMod>(), context, fileService, modBuilder, patchEngineDefinitions, logger) {
+        public ModPatchService(TContext context, ISourceFileService fileService, IModBuilder? modBuilder, IEnumerable<PatchEngineDefinition<TMod, Patch>> patchEngineDefinitions, ILogger<ModPatchService<TMod, TContext>>? logger) : this(new List<TMod>(), context, fileService, modBuilder, patchEngineDefinitions, logger) {
         }
 
         public virtual ModPatchService<TMod, TContext> AddEngine(IPatchEngine<Patch> patchEngine,
             Func<TMod, Dictionary<string, IEnumerable<PatchSet<Patch>>>> patchSelector, int? priority = 10) {
-            _patchEngines.Add(new PatchEngineDefinition<Patch>(patchEngine, patchSelector) {Priority = priority ?? 10});
+            _patchEngines.Add(new PatchEngineDefinition<TMod, Patch>(patchEngine, patchSelector) {Priority = priority ?? 10});
             return this;
         }
 
-        public virtual ModPatchService<TMod, TContext> AddEngines(params PatchEngineDefinition<Patch>[] patchEngineDefinitions) {
+        public virtual ModPatchService<TMod, TContext> AddEngines(params PatchEngineDefinition<TMod, Patch>[] patchEngineDefinitions) {
             foreach (var definition in patchEngineDefinitions) {
                 _patchEngines.Add(definition);
             }
@@ -118,8 +107,8 @@ namespace ModEngine.Build
                 targetFileName = bResult.Name;
             }
 
-            if (_modBuilder != null) {
-                var result = await _modBuilder.RunBuildAsync(BuildContext, targetFileName);
+            if (ModBuilder != null) {
+                var result = await ModBuilder.RunBuildAsync(BuildContext, targetFileName);
                 return result;
             }
             return (true, null);
@@ -187,5 +176,17 @@ namespace ModEngine.Build
                 return (false, null);
             }
         }
+    }
+
+    /// <summary>
+    /// Used to register patch engines with a given <see cref="ModPatchService{TMod,TContext}"/>. 
+    /// Represents a given patch engine and what patches it uses.
+    /// </summary>
+    /// <typeparam name="TPatch">The patch type this engine uses.</typeparam>
+    public record PatchEngineDefinition<TMod, TPatch>(IPatchEngine<TPatch> Engine, Func<TMod, Dictionary<string, IEnumerable<PatchSet<TPatch>>>> PatchSelector) where TMod : Mod where TPatch : Patch
+    {
+        public IPatchEngine<TPatch> Engine { get; set; } = Engine;
+        public Func<TMod, Dictionary<string, IEnumerable<PatchSet<TPatch>>>> PatchSelector { get; set; } = PatchSelector;
+        public int Priority { get; set; }
     }
 }
